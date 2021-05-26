@@ -1,0 +1,107 @@
+.login-register-area {
+    /* background-color: #33b874; */
+    color: #fff;
+    font-family: 'Roboto', sans-serif;
+}
+
+.form-control {
+    height: 41px;
+    background: #f2f2f2;
+    box-shadow: none !important;
+    border: none;
+}
+
+.form-control:focus {
+    background: #e2e2e2;
+}
+
+.form-control,
+.btn {
+    border-radius: 3px;
+}
+
+.regi-form {
+    width: 800px;
+    margin: 30px auto;
+}
+
+.regi-form .form {
+    color: #999;
+    border-radius: 3px;
+    margin-bottom: 15px;
+    background: #fff;
+    box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+    padding: 30px;
+}
+
+.regi-form h2 {
+    color: #333;
+    font-weight: bold;
+    margin-top: 0;
+}
+
+.regi-form hr {
+    margin: 0 -30px 20px;
+}
+
+.regi-form .form-group {
+    margin-bottom: 20px;
+}
+
+.regi-form input[type="checkbox"] {
+    margin-top: 3px;
+}
+
+.regi-form .row div:first-child {
+    padding-right: 10px;
+}
+
+.regi-form .row div:last-child {
+    padding-left: 10px;
+}
+
+.regi-form .btn {
+  padding: 0;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  color: #00a651;
+  background-color: #fff;
+  line-height: 1;
+  display: inline-block;
+  -webkit-box-shadow: 0px 6px 12px 0.8px rgba(14, 14, 14, 0.26);
+  box-shadow: 0px 6px 12px 0.8px rgba(14, 14, 14, 0.26);
+  padding: 23px 40px 20px;
+  border-radius: 50px;
+  margin-top: 47px; }
+
+.regi-form .btn:hover,
+.regi-form .btn:focus {
+    color: #fff;
+    background: #33b874 !important;
+    outline: none;
+}
+
+.regi-form a {
+    color: #33b874;
+    text-decoration: underline;
+}
+
+.regi-form a:hover {
+    text-decoration: none;
+}
+
+.regi-form form a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.regi-form form a:hover {
+    text-decoration: underline;
+}
+
+.regi-form .hint-text {
+    padding-bottom: 15px;
+    text-align: center;
+    color: #33b874;
+}

@@ -1,0 +1,601 @@
+<!doctype html>
+<html class="no-js" lang="zxx">
+
+<head>
+<meta charset="utf-8">
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+<title>Books For You</title>
+<meta name="description" content="">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Favicon -->
+<link rel="shortcut icon" type="image/x-icon"
+	href="assets/img/favicon.png">
+
+<!-- CSS
+	============================================ -->
+
+<!-- Bootstrap CSS -->
+<link rel="stylesheet" href="assets/css/bootstrap.min.css">
+
+<!-- Icon Font CSS -->
+<link rel="stylesheet" href="assets/css/icons.min.css">
+
+<!-- Plugins CSS -->
+<link rel="stylesheet" href="assets/css/plugins.css">
+
+<!-- Main Style CSS -->
+<link rel="stylesheet" href="assets/css/style.css">
+
+<!-- Modernizer JS -->
+<script src="assets/js/vendor/modernizr-2.8.3.min.js"></script>
+<script>
+	// Insert new record with POST request
+	// Insert new record with POST request
+
+	function addToCart(bookId) {
+
+		var customerId = sessionStorage.getItem("customerId");
+		if (customerId == null) {
+			alert('Please login before the add book in cart.');
+			window.location.href = "./login.html";
+
+		}
+
+		var cart = sessionStorage.getItem("cart");
+
+		console.log('bookId ' + bookId);
+
+		console.log('cart ' + cart);
+		var cartTemp = [];
+		var isExist = false;
+		for ( var key in cart) {
+
+			if (cart[key] == bookId) {
+				isExist = true;
+			}
+			console.log(key + ' ' + cart[key]);
+			if (cart[key] != ',') {
+				cartTemp.push(+cart[key]);
+			}
+		}
+
+		if (!isExist) {
+			console.log('!isExist');
+			cartTemp.push(bookId);
+			console.log(cartTemp);
+		}
+		sessionStorage.setItem("cart", cartTemp);
+
+		console.log('Saving');
+
+		if (customerId != '' && bookId != '') {
+
+			var data = {
+				customerId : customerId,
+				bookId : bookId
+			};
+
+			var xhttp = new XMLHttpRequest();
+			// Set POST method and ajax file path
+			xhttp
+					.open(
+							"POST",
+							"http://localhost:8080/BookCollection/bookCartServlet?action=bookCart",
+							true);
+
+			// Content-type
+			xhttp.setRequestHeader("Content-Type", "application/json");
+
+			// Send request with data
+			xhttp.send(JSON.stringify(data));
+
+			xhttp.onload = function() {
+				if (xhttp.status == 400) {
+					// alert(xhttp.);
+					var response = this.responseText;
+					console.log(response);
+					alert(JSON.parse(response).message);
+				} else {
+					var response = this.responseText;
+					console.log(response);
+					alert(JSON.parse(response).message);
+					window.location.href = "./cart.html";
+				}
+			}
+			xhttp.onerror = function(event) {
+				alert(event);
+			};
+
+		} else {
+			alert('Please fill all the fields.');
+		}
+
+	}
+
+	getBook();
+	var selectedBookId;
+	// Load records with GET request
+	function getBook(bookTypeId, name) {
+
+		console.log(bookTypeId);
+
+		var xhttp = new XMLHttpRequest();
+
+		// Set GET method and ajax file path with parameter
+
+		var url = '';
+		if (bookTypeId != 0 && name != '') {
+			url = "http://localhost:8080/BookCollection/bookServlet?action=getAllBooksByFilter&bookTypeId="
+					+ bookTypeId + "&name=" + name;
+		} else if (bookTypeId != 0 && name == '') {
+			url = "http://localhost:8080/BookCollection/bookServlet?action=getAllBooksByFilter&bookTypeId="
+					+ bookTypeId;
+		} else if(bookTypeId == 0){
+			alert('Select Book Type');
+			return;
+		}
+
+		xhttp.open("GET", url, true);
+		// Content-type
+		xhttp.setRequestHeader('Content-type', 'application/json');
+
+		// call on request changes state
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+
+				// Parse this.responseText to JSON object
+				var response = JSON.parse(this.responseText);
+
+				console.log(response);
+				// fetchedRoomList = response.data;
+				var tableHeaderRowCount = 1;
+				var table1 = document.getElementById('BookSerach');
+				var rowCount = table1.rows.length;
+				for (var i = tableHeaderRowCount; i < rowCount; i++) {
+					table1.deleteRow(tableHeaderRowCount);
+				}
+
+				var table = document.getElementById('BookSerach');
+
+				if(response.data.length == 0){
+					alert('No data found');
+				}
+				
+				for ( var key in response.data) {
+					var tr = document.createElement('tr');
+					tr.innerHTML = '<td>'
+							+ (+key + 1)
+							+ '</td>'
+							+ '<td>'
+							+ response.data[key].name
+							+ '</td>'
+							+ '<td>'
+							+ response.data[key].detail
+							+ '</td>'
+							+ '<td>'
+							+ response.data[key].cost
+							+ '</td>'
+							+ '<td>'
+							+ response.data[key].author
+							+ '</td>'
+							+ '<td><img src="' + response.data[key].image + '" alt=""></td>'
+							+ '<td>'
+							+ response.data[key].publication
+							+ '</td>'
+							+ "<td>  <button type='button' class='btn btn-sm btn-secondary' onclick='addToCart("
+							+ response.data[key].id
+							+ ");'>Add To Cart</button></td>";
+					table.appendChild(tr);
+				}
+
+			}
+		};
+
+		// Send request
+		xhttp.send();
+	}
+
+	function search() {
+		var x = document.getElementById("bookTypeId").selectedIndex;
+		var bookName = document.getElementById('bookName').value;
+
+		console.log(x);
+		console.log(bookName);
+
+		if (x == -1) {
+			alert('Please select book Type');
+			return;
+		}
+		var bookTypeId = document.getElementsByTagName("option")[x].value;
+
+		getBook(bookTypeId, bookName);
+
+	}
+</script>
+</head>
+
+<body>
+	<header class="header-area">
+		<div class="header-top bg-img">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-6 col-md-7 col-12 col-sm-8">
+						<div class="header-contact">
+							<ul>
+								<li><i class="fa fa-phone"></i> +98 558 547 589</li>
+								<li><i class="fa fa-envelope-o"></i><a href="#">books@email.com</a></li>
+							</ul>
+						</div>
+					</div>
+					<div class="col-lg-6 col-md-5 col-12 col-sm-4">
+						<div class="login-register">
+							<ul>
+								<li><a href="login.html">Login</a></li>
+								<li><a href="registration.html">Register</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="header-bottom sticky-bar clearfix">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-2 col-md-6 col-4">
+						<div class="logo">
+							<a href="index.html"> <img alt="logo"
+								src="assets/img/logo/logo.png">
+							</a>
+						</div>
+					</div>
+					<div class="col-lg-10 col-md-6 col-8">
+						<div class="menu-cart-wrap">
+							<div class="main-menu">
+								<nav>
+									<ul>
+										<li><a href="index.html"> HOME </a></li>
+										<li><a href="cart.html"> Add To Cart </a></li>
+										<li><a href="checkout.html">CheckOut</a></li>
+										<li><a href="review.html"> Customer Review </a></li>
+										<li><a href="enquiry.html"> Enquiry </a></li>
+									</ul>
+								</nav>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="mobile-menu-area">
+					<div class="mobile-menu">
+						<nav id="mobile-menu-active">
+							<ul>
+								<li><a href="index.html"> HOME </a></li>
+								<li><a href="cart.html">Add To Cart</a></li>
+								<li><a href="checkout.html"> Check Out </a></li>
+								<li><a href="review.html">Customer Review</a></li>
+								<li><a href="enquiry.html"> Enquiry </a></li>
+							</ul>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+	</header>
+	<div class="breadcrumb-area">
+		<div class="breadcrumb-bottom">
+			<div class="container">
+				<ul>
+					<li><a href="#">Home</a> <span><i
+							class="fa fa-angle-double-right"></i>Home</span></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+	<br>
+	<br>
+
+	<div class="row">
+		<div class="col-lg-6 col-md-6 col-6">
+			<label>Select Book Type</label> <select class="form-control"
+				name="bookId" id="bookTypeId" placeholder="Select Book Type">
+				<option value="0" selected="selected">Select Book Type</option>
+
+				<option value="1">Action and adventure storybook</option>
+				<option value="2">Classic books</option>
+				<option value="3">Fictional story</option>
+				<option value="4">Comic book and novels</option>
+				<option value="5">Detective and mystery book</option>
+				<option value="6">Historical fiction books</option>
+				<option value="7">Horror books</option>
+				<option value="8">Literature</option>
+				<option value="9">Romantic stories</option>
+				<option value="10">Science friction</option>
+				<option value="11">Biography</option>
+				<option value="12">Science and technology</option>
+				<option value="13">Other section</option>
+			</select>
+
+		</div>
+
+
+		<div class="col-lg-4 col-md-4 col-4">
+			<label>Select Book Type</label> <input type="text" class="Book Name"
+				placeholder="Book Name" id="bookName">
+
+		</div>
+
+		<div class="col-lg-2 col-md-2 col-2">
+			<br> <br>
+			<button class="submit btn-style" type="submit" onclick="search();">Search</button>
+
+		</div>
+	</div>
+
+	<br>
+	<br>
+
+	<table id="BookSerach" class="table table-hover">
+		<thead>
+			<tr>
+				<th scope="col">ID</th>
+				<th scope="col">Name</th>
+				<th scope="col">Detail</th>
+				<th scope="col">Cost</th>
+				<th scope="col">Author</th>
+				<th scope="col">Image</th>
+				<th scope="col">Publication</th>
+				<th scope="col">Action</th>
+			</tr>
+		</thead>
+	</table>
+
+
+	<footer class="footer-area">
+		<div class="footer-top bg-img default-overlay pt-130 pb-80">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-3 col-md-6 col-sm-6">
+						<div class="footer-widget mb-40">
+							<div class="footer-title">
+								<h4>ABOUT US</h4>
+							</div>
+							<div class="footer-about">
+								<p>Books For You</p>
+								<div class="f-contact-info">
+									<div class="single-f-contact-info">
+										<i class="fa fa-home"></i> <span>Your Office Address</span>
+									</div>
+									<div class="single-f-contact-info">
+										<i class="fa fa-envelope-o"></i> <span><a href="#">Books@email.com</a></span>
+									</div>
+									<div class="single-f-contact-info">
+										<i class="fa fa-phone"></i> <span> +91 7858 547 589</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-3 col-md-3 col-sm-6">
+						<div class="footer-widget mb-40">
+							<div class="footer-title">
+								<h4>QUICK LINK</h4>
+							</div>
+							<div class="footer-list">
+								<ul>
+									<li><a href="index.html"> HOME </a></li>
+									<li><a href="cart.html">Add To Cart</a></li>
+									<li><a href="checkout.html"> Check Out </a></li>
+									<li><a href="review.html">Customer Review</a></li>
+									<li><a href="enquiry.html"> Enquiry </a></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-3 col-md-3 col-sm-6">
+						<div class="footer-widget negative-mrg-30 mb-40">
+							<div class="footer-title">
+								<h4>Books Are Available</h4>
+							</div>
+							<div class="footer-list">
+								<ul>
+									<li><a href="#">Educational</a></li>
+									<li><a href="#">Fictional Novels</a></li>
+									<li><a href="#">Motivational</a></li>
+									<li><a href="#">Mythological</a></li>
+									<li><a href="#">Fairy Tales etc.</a></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-3 col-md-6 col-sm-6">
+						<div class="footer-widget mb-40">
+							<div class="footer-title">
+								<h4>GALLERY</h4>
+							</div>
+							<div class="footer-gallery">
+								<ul></ul>
+								<img alt="logo" src="assets/img/logo/logo.png">
+								</ul>
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+		<div class="footer-bottom pt-15 pb-15">
+			<div class="container">
+				<div class="row align-items-center">
+					<div class="col-lg-4 col-md-12">
+						<div class="copyright">
+							<p>
+								Copyright © <a href="#">Amstechinc.com</a> . All Right Reserved.
+							</p>
+						</div>
+					</div>
+					<div class="col-lg-8 col-md-12">
+						<div class="footer-menu-social">
+							<div class="footer-menu">
+								<ul>
+									<li><a href="#">Privecy & Policy</a></li>
+									<li><a href="#">Terms & Conditions of Use</a></li>
+								</ul>
+							</div>
+							<div class="footer-social">
+								<ul>
+									<li><a class="facebook" href="#"><i
+											class="fa fa-facebook"></i></a></li>
+									<li><a class="youtube" href="#"><i
+											class="fa fa-youtube-play"></i></a></li>
+									<li><a class="twitter" href="#"><i
+											class="fa fa-twitter"></i></a></li>
+									<li><a class="google-plus" href="#"><i
+											class="fa fa-google-plus"></i></a></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</footer>
+
+
+
+	<!-- Modal -->
+	<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-label="Close">
+						<span aria-hidden="true">x</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-5 col-sm-12 col-xs-12">
+							<div class="tab-content quickview-big-img">
+								<div id="pro-1" class="tab-pane fade show active">
+									<img src="assets/img/product/quickview-l1.jpg" alt="">
+								</div>
+								<div id="pro-2" class="tab-pane fade">
+									<img src="assets/img/product/quickview-l2.jpg" alt="">
+								</div>
+								<div id="pro-3" class="tab-pane fade">
+									<img src="assets/img/product/quickview-l3.jpg" alt="">
+								</div>
+								<div id="pro-4" class="tab-pane fade">
+									<img src="assets/img/product/quickview-l2.jpg" alt="">
+								</div>
+							</div>
+							<!-- Thumbnail Large Image End -->
+							<!-- Thumbnail Image End -->
+							<div class="product-thumbnail">
+								<div class="thumb-menu owl-carousel nav nav-style"
+									role="tablist">
+									<a class="active" data-toggle="tab" href="#pro-1"><img
+										src="assets/img/product/quickview-s1.jpg" alt=""></a> <a
+										data-toggle="tab" href="#pro-2"><img
+										src="assets/img/product/quickview-s2.jpg" alt=""></a> <a
+										data-toggle="tab" href="#pro-3"><img
+										src="assets/img/product/quickview-s3.jpg" alt=""></a> <a
+										data-toggle="tab" href="#pro-4"><img
+										src="assets/img/product/quickview-s2.jpg" alt=""></a>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-7 col-sm-12 col-xs-12">
+							<div class="product-details-content quickview-content">
+								<h2>Product Name</h2>
+								<div class="pro-details-rating-wrap">
+									<div class="pro-details-rating">
+										<i class="zmdi zmdi-star"></i> <i class="zmdi zmdi-star"></i>
+										<i class="zmdi zmdi-star"></i> <i class="zmdi zmdi-star"></i>
+										<i class="zmdi zmdi-star"></i>
+									</div>
+									<span>(1 customer review)</span>
+								</div>
+								<h3>$329</h3>
+								<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+									Nunca augue quis neque ultrices placerat sit amet quis mauris.
+									Integer urna libero, aliquet neque posu ullamcorper fringilla
+									dolor. Maecenas id mattis magna.</p>
+								<div class="pro-details-size-color2 mt-30">
+									<div class="pro-details-color2-wrap">
+										<span>Color</span>
+										<div class="pro-details-color2-content">
+											<ul>
+												<li class="blue"></li>
+												<li class="maroon active"></li>
+												<li class="gray"></li>
+												<li class="green"></li>
+												<li class="yellow"></li>
+												<li class="white"></li>
+											</ul>
+										</div>
+									</div>
+									<div class="pro-details-size2">
+										<span>Size</span>
+										<div class="pro-details-size2-content">
+											<ul>
+												<li><a href="#">s</a></li>
+												<li><a href="#">m</a></li>
+												<li><a href="#">l</a></li>
+												<li><a href="#">xl</a></li>
+												<li><a href="#">xxl</a></li>
+											</ul>
+										</div>
+									</div>
+								</div>
+								<div class="pro-details-quality mt-50 mb-45">
+									<div class="cart-plus-minus">
+										<input class="cart-plus-minus-box" type="text"
+											name="qtybutton" value="2">
+									</div>
+									<div class="pro-details-cart">
+										<a class="default-btn btn-hover" href="#">Add To Cart</a>
+									</div>
+									<div class="pro-details-wishlist">
+										<a class=" btn-hover" href="#"><i class="fa fa-heart-o"></i></a>
+									</div>
+								</div>
+								<span><i class="fa fa-check"></i> In stock</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Modal end -->
+
+
+
+
+
+
+
+
+
+
+
+	<!-- JS
+============================================ -->
+
+	<!-- jQuery JS -->
+	<script src="assets/js/vendor/jquery-1.12.4.min.js"></script>
+	<!-- Popper JS -->
+	<script src="assets/js/popper.min.js"></script>
+	<!-- Bootstrap JS -->
+	<script src="assets/js/bootstrap.min.js"></script>
+	<!-- Plugins JS -->
+	<script src="assets/js/plugins.js"></script>
+	<!-- Ajax Mail -->
+	<script src="assets/js/ajax-mail.js"></script>
+	<!-- Main JS -->
+	<script src="assets/js/main.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,477 @@
+<!doctype html>
+<html class="no-js" lang="zxx">
+
+<head>
+<meta charset="utf-8">
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+<title>Books For You</title>
+<meta name="description" content="">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+<!-- Bootstrap CSS -->
+<link rel="stylesheet" href="assets/css/bootstrap.min.css">
+
+<!-- Icon Font CSS -->
+<link rel="stylesheet" href="assets/css/icons.min.css">
+
+<!-- Plugins CSS -->
+<link rel="stylesheet" href="assets/css/plugins.css">
+
+<!-- Main Style CSS -->
+<link rel="stylesheet" href="assets/css/style.css">
+
+<!-- Modernizer JS -->
+<script src="assets/js/vendor/modernizr-2.8.3.min.js"></script>
+
+<script>
+	// Insert new record with POST request
+	// Insert new record with POST request
+
+	var customerId = sessionStorage.getItem("customerId");
+	if (customerId == null) {
+		alert('Please login.');
+		window.location.href = "./login.html";
+
+	}
+
+	var cart = sessionStorage.getItem("cart");
+
+	console.log(cart);
+
+	var totalAmount = 0;
+
+	var cost = [];
+	for ( var key in cart) {
+		if(cart[key] == ','){
+			continue;
+		}
+
+		getBook(cart[key], key);
+		
+	}
+
+	function getBook(bookId, key) {
+		var xhttp = new XMLHttpRequest();
+
+		// Set GET method and ajax file path with parameter
+
+		xhttp.open("GET",
+				"http://localhost:8080/BookCollection/bookServlet?action=getBookById&id="
+						+ bookId, true);
+		// Content-type
+		xhttp.setRequestHeader('Content-type', 'application/json');
+
+		// call on request changes state
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+
+				// Parse this.responseText to JSON object
+				var response = JSON.parse(this.responseText);
+
+				console.log(response.data);
+
+				totalAmount = totalAmount + response.data.cost;
+				console.log(totalAmount);
+				document.getElementById("myText").innerHTML = totalAmount;
+
+				var ul = document.getElementById("list");
+				var li = document.createElement("li");
+				var span1 = document.createElement("span");
+				var span2 = document.createElement("span");
+
+				span1.appendChild(document.createTextNode(response.data.name));
+				span2.appendChild(document.createTextNode(response.data.cost));
+
+				li.appendChild(span1);
+				li.appendChild(span2);
+
+				ul.appendChild(li);
+				cost[key] = response.data.cost;
+
+			}
+		};
+
+		// Send request
+		xhttp.send();
+	}
+	
+	
+
+    function createOrder(bookId, cost) {
+        var customerId = sessionStorage.getItem("customerId");
+
+        var paymentTypeId = document.getElementById('paymentTypeId').value;
+        var address = document.getElementById('address').value;
+        var city = document.getElementById('city').value;
+        var d = new Date();
+
+        if ( paymentTypeId != '' && address != '' && city != '') {
+
+            var data = {  bookId: bookId,	customerId: customerId,	cost: cost,	bookingDate: d,	totalCost: cost,	transactionStatus: 1,	paymentTypeId: paymentTypeId,	deliveryAddress: address,	cityName: city,	quantity: 1 };
+
+            var xhttp = new XMLHttpRequest();
+            // Set POST method and ajax file path
+            xhttp.open("POST", "http://localhost:8080/BookCollection/bookOrderServlet?action=bookOrder", true);
+
+
+            xhttp.onload = function () {
+				if (xhttp.status == 400) {
+					// alert(xhttp.);
+					var response = this.responseText;
+					console.log(response);
+					alert(JSON.parse(response).message);
+				} else {
+					var response = this.responseText;
+					console.log(JSON.parse(response));
+
+					alert(JSON.parse(response).message);
+					sessionStorage.removeItem("cart");
+
+
+				}
+			}
+
+            // Content-type
+            xhttp.setRequestHeader("Content-Type", "application/json");
+
+            // Send request with data
+            xhttp.send(JSON.stringify(data));
+
+        }else{
+			alert('Insert address and city details.');
+
+        }
+
+    }
+    function placeOrder() {
+    	for ( var key in cart) {
+    		if(cart[key] == ','){
+    			continue;
+    		}
+    		console.log(cart[key]);
+    		console.log(cost[key]);
+
+     		createOrder(cart[key], cost[key])
+    	}
+
+    }
+
+
+	function clearCart() {
+		var cart = sessionStorage.removeItem("cart");
+		location.reload();
+
+	}
+	
+	
+	
+</script>
+
+</head>
+
+<body>
+	<header class="header-area">
+		<div class="header-top bg-img">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-6 col-md-7 col-12 col-sm-8">
+						<div class="header-contact">
+							<ul>
+								<li><i class="fa fa-phone"></i> +98 558 547 589</li>
+								<li><i class="fa fa-envelope-o"></i><a href="#">books@email.com</a></li>
+							</ul>
+						</div>
+					</div>
+					<div class="col-lg-6 col-md-5 col-12 col-sm-4">
+						<div class="login-register">
+							<ul>
+								<li><a href="login.html">Login</a></li>
+								<li><a href="registration.html">Register</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="header-bottom sticky-bar clearfix">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-2 col-md-6 col-4">
+						<div class="logo">
+							<a href="index.html"> <img alt="logo"
+								src="assets/img/logo/logo.png">
+							</a>
+						</div>
+					</div>
+					<div class="col-lg-10 col-md-6 col-8">
+						<div class="menu-cart-wrap">
+							<div class="main-menu">
+								<nav>
+									<ul>
+										<li><a href="index.html"> HOME </a></li>
+										<li><a href="cart.html"> Add To Cart </a></li>
+										<li><a href="checkout.html">CheckOut</a></li>
+										<li><a href="review.html"> Customer Review </a></li>
+										<li><a href="enquiry.html"> Enquiry </a></li>
+									</ul>
+								</nav>
+							</div>
+
+						</div>
+					</div>
+				</div>
+				<div class="mobile-menu-area">
+					<div class="mobile-menu">
+						<nav id="mobile-menu-active">
+							<ul>
+								<li><a href="index.html"> HOME </a></li>
+								<li><a href="cart.html">Add To Cart</a></li>
+								<li><a href="checkout.html"> Check Out </a></li>
+								<li><a href="review.html">Customer Review</a></li>
+								<li><a href="enquiry.html"> Enquiry </a></li>
+							</ul>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+	</header>
+	<div class="breadcrumb-area">
+		<div class="breadcrumb-bottom">
+			<div class="container">
+				<ul>
+					<li><a href="#">Home</a> <span><i
+							class="fa fa-angle-double-right"></i>Check Out/Order</span></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+	<div class="checkout-area pt-130 pb-130">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-7">
+					<div class="billing-info-wrap">
+						<h3>Billing Details</h3>
+						<div class="row">
+							<div class="col-lg-12">
+								<div class="billing-info mb-20">
+									<label>Payment Type</label> <select class="delivery-address" name="paymentType" id="paymentTypeId">
+										<option value="1">Debit cards</option>
+										<option value="2">Credit cards</option>
+										<option value="3">Electronic bank transfers</option>
+										<option value="4">WALLET</option>
+										<option value="5">Cash</option>
+									</select>
+
+								</div>
+							</div>
+							<div class="col-lg-12">
+								<div class="billing-select mb-20">
+									<label>Delivery Address</label> <input class="delivery-address" id="address"
+										placeholder="House number and street name" type="text">
+
+								</div>
+							</div>
+
+							<div class="col-lg-12">
+								<div class="billing-info mb-20">
+									<label>City</label> <input type="text" class="delivery-address" placeholder="City Name" id="city">
+								</div>
+							</div>
+
+						</div>
+						<div class="checkout-account mb-50">
+							<span>Create an account?</span>
+						</div>
+
+
+					</div>
+				</div>
+				<div class="col-lg-5">
+					<div class="your-order-area">
+						<h3>Your order</h3>
+						<div class="your-order-wrap gray-bg-4">
+							<div class="your-order-product-info">
+								<div class="your-order-top">
+									<ul>
+										<li>Product</li>
+										<li>Total</li>
+									</ul>
+								</div>
+								<div class="your-order-middle">
+									<ul id="list">
+									</ul>
+								</div>
+								<div class="your-order-bottom">
+									<ul>
+										<li class="your-order-shipping">Shipping</li>
+										<li>Free shipping</li>
+									</ul>
+								</div>
+								<div class="your-order-total">
+									<ul>
+										<li class="order-total">Total</li>
+										<li><span id="myText"></span></li>
+									</ul>
+								</div>
+							</div>
+							<div class="payment-method">
+								<div class="payment-accordion element-mrg">
+									<div class="panel-group" id="accordion">
+
+										<div class="panel payment-accordion">
+											<div class="panel-heading" id="method-two">
+												<h4 class="panel-title"></h4>
+											</div>
+											<div id="method2" class="panel-collapse collapse">
+												<div class="panel-body">
+													<p>Select Payments.</p>
+												</div>
+											</div>
+										</div>
+
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="Place-order mt-25">
+							<a class="btn-hover" onclick="placeOrder()">Place Order</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<footer class="footer-area">
+		<div class="footer-top bg-img default-overlay pt-130 pb-80">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-3 col-md-6 col-sm-6">
+						<div class="footer-widget mb-40">
+							<div class="footer-title">
+								<h4>ABOUT US</h4>
+							</div>
+							<div class="footer-about">
+								<p>Books For You</p>
+								<div class="f-contact-info">
+									<div class="single-f-contact-info">
+										<i class="fa fa-home"></i> <span>Your Office Address</span>
+									</div>
+									<div class="single-f-contact-info">
+										<i class="fa fa-envelope-o"></i> <span><a href="#">Books@email.com</a></span>
+									</div>
+									<div class="single-f-contact-info">
+										<i class="fa fa-phone"></i> <span> +91 7858 547 589</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-3 col-md-3 col-sm-6">
+						<div class="footer-widget mb-40">
+							<div class="footer-title">
+								<h4>QUICK LINK</h4>
+							</div>
+							<div class="footer-list">
+								<ul>
+									<li><a href="index.html"> HOME </a></li>
+									<li><a href="cart.html">Add To Cart</a></li>
+									<li><a href="checkout.html"> Check Out </a></li>
+									<li><a href="review.html">Customer Review</a></li>
+									<li><a href="enquiry.html"> Enquiry </a></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-3 col-md-3 col-sm-6">
+						<div class="footer-widget negative-mrg-30 mb-40">
+							<div class="footer-title">
+								<h4>Books Are Available</h4>
+							</div>
+							<div class="footer-list">
+								<ul>
+									<li><a href="#">Educational</a></li>
+									<li><a href="#">Fictional Novels</a></li>
+									<li><a href="#">Motivational</a></li>
+									<li><a href="#">Mythological</a></li>
+									<li><a href="#">Fairy Tales etc.</a></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-3 col-md-6 col-sm-6">
+						<div class="footer-widget mb-40">
+							<div class="footer-title">
+								<h4>GALLERY</h4>
+							</div>
+							<div class="footer-gallery">
+								<ul></ul>
+								<img alt="logo" src="assets/img/logo/logo.png">
+								</ul>
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+		<div class="footer-bottom pt-15 pb-15">
+			<div class="container">
+				<div class="row align-items-center">
+					<div class="col-lg-4 col-md-12">
+						<div class="copyright">
+							<p>
+								Copyright © <a href="#">Amstechinc.com</a> . All Right Reserved.
+							</p>
+						</div>
+					</div>
+					<div class="col-lg-8 col-md-12">
+						<div class="footer-menu-social">
+							<div class="footer-menu">
+								<ul>
+									<li><a href="#">Privecy & Policy</a></li>
+									<li><a href="#">Terms & Conditions of Use</a></li>
+								</ul>
+							</div>
+							<div class="footer-social">
+								<ul>
+									<li><a class="facebook" href="#"><i
+											class="fa fa-facebook"></i></a></li>
+									<li><a class="youtube" href="#"><i
+											class="fa fa-youtube-play"></i></a></li>
+									<li><a class="twitter" href="#"><i
+											class="fa fa-twitter"></i></a></li>
+									<li><a class="google-plus" href="#"><i
+											class="fa fa-google-plus"></i></a></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</footer>
+
+	<!-- JS
+        ============================================ -->
+
+	<!-- jQuery JS -->
+	<script src="assets/js/vendor/jquery-1.12.4.min.js"></script>
+	<!-- Popper JS -->
+	<script src="assets/js/popper.min.js"></script>
+	<!-- Bootstrap JS -->
+	<script src="assets/js/bootstrap.min.js"></script>
+	<!-- Plugins JS -->
+	<script src="assets/js/plugins.js"></script>
+	<!-- Ajax Mail -->
+	<script src="assets/js/ajax-mail.js"></script>
+	<!-- Main JS -->
+	<script src="assets/js/main.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,423 @@
+<!doctype html>
+<html class="no-js" lang="zxx">
+
+<head>
+<meta charset="utf-8">
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+<title>Books For You</title>
+<meta name="description" content="">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Favicon -->
+<link rel="shortcut icon" type="image/x-icon"
+	href="assets/img/logo/logo.png">
+
+<!-- CSS
+	============================================ -->
+
+<!-- Bootstrap CSS -->
+<link rel="stylesheet" href="assets/css/bootstrap.min.css">
+
+<!-- Icon Font CSS -->
+<link rel="stylesheet" href="assets/css/icons.min.css">
+
+<!-- Plugins CSS -->
+<link rel="stylesheet" href="assets/css/plugins.css">
+
+<!-- Main Style CSS -->
+<link rel="stylesheet" href="assets/css/style.css">
+
+<!-- Modernizer JS -->
+<script src="assets/js/vendor/modernizr-2.8.3.min.js"></script>
+
+
+<script>
+	// Insert new record with POST request
+	function ReviewSave() {
+		var customerId = sessionStorage.getItem("customerId");
+		var x = document.getElementById("mySelect").selectedIndex;
+
+		console.log(x);
+		if(x == -1){
+			alert('Please select book');	
+			return;
+		}
+		
+
+		var bookId = document.getElementsByTagName("option")[x].value;
+		var review = document.getElementById('review').value;
+
+		if (customerId != '' && bookId != '' && review != '') {
+
+			var data = {
+				customerId : customerId,
+				bookId : bookId,
+				review : review
+			};
+
+			var xhttp = new XMLHttpRequest();
+			// Set POST method and ajax file path
+			xhttp
+					.open(
+							"POST",
+							"http://localhost:8080/BookCollection/reviewServlet?action=customerReview",
+							true);
+
+			xhttp.onload = function() {
+				if (xhttp.status == 400) {
+					// alert(xhttp.);
+					var response = this.responseText;
+					console.log(response);
+					alert(JSON.parse(response).message);
+				} else {
+					var response = this.responseText;
+					console.log(response);
+					alert(JSON.parse(response).message);
+					window.location.href = "./review.html";
+				}
+			}
+			xhttp.onerror = function(event) {
+				alert(event);
+			};
+
+			// Content-type
+			xhttp.setRequestHeader("Content-Type", "application/json");
+
+			// Send request with data
+			xhttp.send(JSON.stringify(data));
+
+		}else{
+			alert('Please insert your feedback');
+		}
+
+	}
+	function getBookList() {
+		var bookTypeId = document.getElementById('bookTypeId').value;
+
+		var xhttp = new XMLHttpRequest();
+
+		// Set GET method and ajax file path with parameter
+
+		xhttp
+				.open(
+						"GET",
+						"http://localhost:8080/BookCollection/bookServlet?action=getAllBooksByFilter&bookTypeId="
+								+ bookTypeId, true);
+		// Content-type
+		xhttp.setRequestHeader('Content-type', 'application/json');
+
+		// call on request changes state
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+
+				// Parse this.responseText to JSON object
+				var response = JSON.parse(this.responseText);
+
+				console.log(response);
+				// fetchedRoomList = response.data;
+
+				var table = document.getElementById('BookSerach');
+
+				console.log(response.data.length);
+
+				if (response.data.length == 0) {
+					alert('No data found');
+				}
+				for ( var key in response.data) {
+					var tr = document.createElement('tr');
+
+					var x = document.getElementById("mySelect");
+					var option = document.createElement("option");
+					option.text = response.data[key].name;
+					x.add(option, x[0]);
+
+				}
+
+			}
+		};
+
+		// Send request
+		xhttp.send();
+	}
+
+	// function createSession(Id, Email, BookId, CustomerId) {
+	//     sessionStorage.setItem("Id", Id);
+	//     sessionStorage.setItem("Email", Email);
+	//     sessionStorage.setItem("BookId", BookId);
+	//     sessionStorage.setItem("CustomerId", CustomerId);
+	// }
+</script>
+</head>
+
+<body>
+	<header class="header-area">
+		<div class="header-top bg-img">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-6 col-md-7 col-12 col-sm-8">
+						<div class="header-contact">
+							<ul>
+								<li><i class="fa fa-phone"></i> +98 558 547 589</li>
+								<li><i class="fa fa-envelope-o"></i><a href="#">books@email.com</a></li>
+							</ul>
+						</div>
+					</div>
+					<div class="col-lg-6 col-md-5 col-12 col-sm-4">
+						<div class="login-register">
+							<ul>
+								<li><a href="login.html">Login</a></li>
+								<li><a href="registration.html">Register</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="header-bottom sticky-bar clearfix">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-2 col-md-6 col-4">
+						<div class="logo">
+							<a href="index.html"> <img alt="logo"
+								src="assets/img/logo/logo.png">
+							</a>
+						</div>
+					</div>
+					<div class="col-lg-10 col-md-6 col-8">
+						<div class="menu-cart-wrap">
+							<div class="main-menu">
+								<nav>
+									<ul>
+										<li><a href="index.html"> HOME </a></li>
+										<li><a href="cart.html"> Add To Cart </a></li>
+										<li><a href="checkout.html">CheckOut</a></li>
+										<li><a href="review.html"> Customer Review </a></li>
+										<li><a href="enquiry.html"> Enquiry </a></li>
+									</ul>
+								</nav>
+							</div>
+
+						</div>
+					</div>
+				</div>
+				<div class="mobile-menu-area">
+					<div class="mobile-menu">
+						<nav id="mobile-menu-active">
+							<ul>
+								<li><a href="index.html"> HOME </a></li>
+								<li><a href="cart.html">Add To Cart</a></li>
+								<li><a href="checkout.html"> Check Out </a></li>
+								<li><a href="review.html">Customer Review</a></li>
+								<li><a href="enquiry.html"> Enquiry </a></li>
+							</ul>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+	</header>
+	<div class="breadcrumb-area">
+		<div class="breadcrumb-bottom">
+			<div class="container">
+				<ul>
+					<li><a href="#">Home</a> <span><i
+							class="fa fa-angle-double-right"></i>Customer Reviews</span></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div class="contact-area pt-130 pb-130">
+		<div class="container">
+			<div class="row align-items-center">
+				<div class="col-lg-8">
+					<div class="contact-form">
+						<div class="contact-title mb-45">
+							<h2>
+								Customer<span>Feedback</span>
+							</h2>
+							<p>Please Fill Details in This Form For Feedback.Your Reviews
+								Are Always Valuable For Us.</p>
+						</div>
+						<div id="contact-form">
+
+							<input name="customerId" id="customerId"
+								placeholder="Customer Id*" type="text" hidden> </select> <br>
+							<label>Select Book Type</label> <select class="form-control"
+								name="bookId" id="bookTypeId" placeholder="Select Book Type"
+								onchange="getBookList()">
+								<option value="0" selected="selected">Select Book Type</option>
+
+								<option value="1">Action and adventure storybook</option>
+								<option value="2">Classic books</option>
+								<option value="3">Fictional story</option>
+								<option value="4">Comic book and novels</option>
+								<option value="5">Detective and mystery book</option>
+								<option value="6">Historical fiction books</option>
+								<option value="7">Horror books</option>
+								<option value="8">Literature</option>
+								<option value="9">Romantic stories</option>
+								<option value="10">Science friction</option>
+								<option value="11">Biography</option>
+								<option value="12">Science and technology</option>
+								<option value="13">Other section</option>
+
+							</select> <br> <label>Select Book</label> <select
+								class="form-control" id="mySelect">
+
+							</select> <br>
+
+							<textarea name="review" id="review" placeholder="Review Message"
+								required></textarea>
+							<button class="submit btn-style" type="submit"
+								onclick="ReviewSave();">Submit</button>
+						</div>
+						<p class="form-messege"></p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<footer class="footer-area">
+		<div class="footer-top bg-img default-overlay pt-130 pb-80">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-3 col-md-6 col-sm-6">
+						<div class="footer-widget mb-40">
+							<div class="footer-title">
+								<h4>ABOUT US</h4>
+							</div>
+							<div class="footer-about">
+								<p>Books For You</p>
+								<div class="f-contact-info">
+									<div class="single-f-contact-info">
+										<i class="fa fa-home"></i> <span>Your Office Address</span>
+									</div>
+									<div class="single-f-contact-info">
+										<i class="fa fa-envelope-o"></i> <span><a href="#">Books@email.com</a></span>
+									</div>
+									<div class="single-f-contact-info">
+										<i class="fa fa-phone"></i> <span> +91 7858 547 589</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-3 col-md-3 col-sm-6">
+						<div class="footer-widget mb-40">
+							<div class="footer-title">
+								<h4>QUICK LINK</h4>
+							</div>
+							<div class="footer-list">
+								<ul>
+									<li><a href="index.html"> HOME </a></li>
+									<li><a href="cart.html">Add To Cart</a></li>
+									<li><a href="checkout.html"> Check Out </a></li>
+									<li><a href="review.html">Customer Review</a></li>
+									<li><a href="enquiry.html"> Enquiry </a></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-3 col-md-3 col-sm-6">
+						<div class="footer-widget negative-mrg-30 mb-40">
+							<div class="footer-title">
+								<h4>Books Are Available</h4>
+							</div>
+							<div class="footer-list">
+								<ul>
+									<li><a href="#">Educational</a></li>
+									<li><a href="#">Fictional Novels</a></li>
+									<li><a href="#">Motivational</a></li>
+									<li><a href="#">Mythological</a></li>
+									<li><a href="#">Fairy Tales etc.</a></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-3 col-md-6 col-sm-6">
+						<div class="footer-widget mb-40">
+							<div class="footer-title">
+								<h4>GALLERY</h4>
+							</div>
+							<div class="footer-gallery">
+								<ul></ul>
+								<img alt="logo" src="assets/img/logo/logo.png">
+								</ul>
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+		<div class="footer-bottom pt-15 pb-15">
+			<div class="container">
+				<div class="row align-items-center">
+					<div class="col-lg-4 col-md-12">
+						<div class="copyright">
+							<p>
+								Copyright © <a href="#">Amstechinc.com</a> . All Right Reserved.
+							</p>
+						</div>
+					</div>
+					<div class="col-lg-8 col-md-12">
+						<div class="footer-menu-social">
+							<div class="footer-menu">
+								<ul>
+									<li><a href="#">Privecy & Policy</a></li>
+									<li><a href="#">Terms & Conditions of Use</a></li>
+								</ul>
+							</div>
+							<div class="footer-social">
+								<ul>
+									<li><a class="facebook" href="#"><i
+											class="fa fa-facebook"></i></a></li>
+									<li><a class="youtube" href="#"><i
+											class="fa fa-youtube-play"></i></a></li>
+									<li><a class="twitter" href="#"><i
+											class="fa fa-twitter"></i></a></li>
+									<li><a class="google-plus" href="#"><i
+											class="fa fa-google-plus"></i></a></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+	<!-- JS
+============================================ -->
+
+	<!-- jQuery JS -->
+	<script src="assets/js/vendor/jquery-1.12.4.min.js"></script>
+	<!-- Popper JS -->
+	<script src="assets/js/popper.min.js"></script>
+	<!-- Bootstrap JS -->
+	<script src="assets/js/bootstrap.min.js"></script>
+	<!-- Plugins JS -->
+	<script src="assets/js/plugins.js"></script>
+	<!-- Ajax Mail -->
+	<script src="assets/js/ajax-mail.js"></script>
+	<script
+		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCzcEM8z2_imGO8TMRmJEpDEahvZ7KYY_U"></script>
+
+	<!-- Main JS -->
+	<script src="assets/js/main.js"></script>
+
+</body>
+
+</html>
